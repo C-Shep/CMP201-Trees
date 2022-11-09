@@ -27,11 +27,12 @@ void AVL::inOrder(AVL* r)
 
 int AVL::getBalance(AVL* r)
 { 
-	int leftHeight, rightHeight, shungite;
-	r->right
+	if (r == nullptr)
+	{
+		return 0;
+	}
 
-
-	return 0;
+	return getHeight(r->left) - getHeight(r->right);
 }
 
 int AVL::getHeight(AVL* r)
@@ -41,8 +42,8 @@ int AVL::getHeight(AVL* r)
 		return 0;
 	}
 	else {
-		return max(getHeight(r->right), getHeight(r->left) + 1);
-	}
+		return r->height;
+	}	
 	return 0;
 }
 
@@ -63,11 +64,42 @@ AVL* AVL::insertNode(AVL* r, int key)
 	{
 		r->right = insertNode(r->right, key);
 	}
-	else {
+	else if(r->data > key){
 		r->left = insertNode(r->left, key);
 	}
+	else {
+		return r; //this is the coconut
+	}
 
-	return r; //this is the coconut
+	
+	r->height = 1 + max(getHeight(r->left), getHeight(r->right));
+
+	int balance = getBalance(r);
+
+	// Left Left Case
+	if (balance > 1 && key < r->left->data)
+		return rightRotate(r);
+
+	// Right Right Case
+	if (balance < -1 && key > r->right->data)
+		return leftRotate(r);
+
+	// Left Right Case
+	if (balance > 1 && key > r->left->data)
+	{
+		r->left = leftRotate(r->left);
+		return rightRotate(r);
+	}
+
+	// Right Left Case
+	if (balance < -1 && key < r->right->data)
+	{
+		r->right = rightRotate(r->right);
+		return leftRotate(r);
+	}
+
+	/* return the (unchanged) node pointer */
+	return r;
 }
 
 AVL* AVL::deleteNode(AVL* r, int key)
@@ -86,7 +118,14 @@ AVL* AVL::leftRotate(AVL* r)
 	//update height of root (1+max...)
 	//update height of NR (1+max...)
 
+	// Update heights
+	r->height = max(getHeight(r->left), getHeight(r->right) + 1);
+
+	newRoot->height = max(getHeight(r->left), getHeight(r->right) + 1);
+
+	// Return new root
 	return newRoot;
+
 }
 
 AVL* AVL::rightRotate(AVL* r)
@@ -99,7 +138,13 @@ AVL* AVL::rightRotate(AVL* r)
 
 	//update height of root (1+max...)
 	//update height of NR (1+max...)
+	// 
+	// Update heights
+	r->height = max(getHeight(r->left), getHeight(r->right) + 1);
 
+	newRoot->height = max(getHeight(r->left), getHeight(r->right) + 1);
+
+	// Return new root
 	return newRoot;
 }
 
@@ -118,12 +163,14 @@ int AVL::max(int a, int b)
 
 int main()
 {
-	AVL* tree = new AVL(5);
+	AVL* tree = new AVL(3);
 
-	for (int i = 1; i <= 10; ++i)
+	for (int i = 1; i <= 100; ++i)
 	{
 		tree = tree->insertNode(tree, i);
 	}
-
+	tree = tree->insertNode(tree, );
 	tree->inOrder(tree);
+
+	std::cout << tree->data;
 }
