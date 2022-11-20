@@ -28,6 +28,5 @@ public:
 	AVL* leftRotate(AVL* r);
 	AVL* rightRotate(AVL* r);
 	int max(int a, int b);
-	int main();
 };
 

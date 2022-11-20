@@ -46,9 +46,10 @@ int AVL::getHeight(AVL* r)
 	}	
 	return 0;
 }
-
+int counter = 0;
 AVL* AVL::insertNode(AVL* r, int key)
 {
+	counter += 1;
 	if (r == nullptr)
 	{
 		r = new AVL(key);//if theres nothing here, make something here
@@ -64,13 +65,13 @@ AVL* AVL::insertNode(AVL* r, int key)
 	{
 		r->right = insertNode(r->right, key);
 	}
-	else if(r->data > key){
+	else if (r->data > key) {
 		r->left = insertNode(r->left, key);
 	}
 	else {// is a coconut a fruit? i guess its a nut right? but how many nuts have milk in them? is it really milk or is it like just a funny coloured water? god this is so stupid
 		return r; //this is the coconut
 	}
-	
+
 	//update the height to the highest part of the tree. (longest?? (deepest?? (furthest??)))
 	r->height = 1 + max(getHeight(r->left), getHeight(r->right));
 
@@ -78,11 +79,15 @@ AVL* AVL::insertNode(AVL* r, int key)
 
 	// Left Left Case
 	if (balance > 1 && key < r->left->data)
+	{
 		return rightRotate(r);
+	}
 
 	// Right Right Case
 	if (balance < -1 && key > r->right->data)
+	{
 		return leftRotate(r);
+	}
 
 	// Left Right Case
 	if (balance > 1 && key > r->left->data)
@@ -121,49 +126,58 @@ AVL* AVL::deleteNode(AVL* r, int key)
 	}
 	else //HIT!! //if(r->data == key)
 	{
-		if (r->right == nullptr || r->left == nullptr)
+		AVL* temp;
+		if (r->right == nullptr || r->left == nullptr)	//there is a nullptr on either side of node
 		{
-			AVL* temp = r->left ? r->left : r->right;
+			if (r->left != nullptr)	//keep to the left unless there is no left node in which case go right
+			{
+				temp = r->left;	//stay left
+			}
+			else 
+			{
+				temp = r->right;//go right
+			}
 
-			if (temp == nullptr)
+			if (temp == nullptr)	// if the temp has landed on a nullptr then set temp to r and erase r
 			{
 				temp = r;
 				r = nullptr;
 			}
-			else {
-				*r = *temp;
-				free(temp);
+			else 
+			{					//otherwise set the current node to temps value
+				r = temp;
 			}
-
-
 		}
-		else {
-
+		else					//if there is no nullptrs on left or right
+		{
 			AVL* temp = r;
-			AVL* current = temp->right;
+			AVL* keepLeftTemp = temp->right;
 
-			while (current->left != NULL)
+			while (keepLeftTemp->left != nullptr)		//keep looping and going left until you cant anymore
 			{
-				current = current->left;
+				keepLeftTemp = keepLeftTemp->left;
 			}
 
-			temp = current;
+			temp = keepLeftTemp;	//set temp to the leftmost node
 
-			r->data = temp->data;
+			r->data = temp->data;	//set the current nodes data to the temp data
 
-			r->right = deleteNode(r->right, temp->data);
+			r->right = deleteNode(r->right, temp->data);	//continue to call the function untill you cant anymore
 		}
+
+		if (r == nullptr)	//if the current node is a null pointer get out of the function
+		{
+			return r;	//coconut!
+		}
+
 	}
 
-	if (r == nullptr)
-	{
-		return r;
-	}
-
+	//update the height to the highest part of the tree. (longest?? (deepest?? (furthest??)))
 	r->height = 1 + max(getHeight(r->left), getHeight(r->right));
 
 	int balance = getBalance(r);
 
+	//delete rotations (thanks to rathbhupendra on geeksforgeeks for help on the conditions for these rotations)
 	// Left Left Case
 	if (balance > 1 && getBalance(r->left) >= 0)
 	{
@@ -245,14 +259,19 @@ int main()
 {
 	AVL* tree = new AVL(3);
 
-	for (int i = 1; i <= 10; ++i)
-	{
+	for (int i = 1; i <= 200; ++i)
+	{	
 		tree = tree->insertNode(tree, i);
 	}
 
 	tree = tree->deleteNode(tree, 4);
+	tree = tree->deleteNode(tree, 2);
+	tree = tree->deleteNode(tree, 14);
+	tree = tree->deleteNode(tree, 128);
 
 	tree->inOrder(tree);
 
 	std::cout << "Root: " << tree->data;
+
+	std::cout << "   Counter : " << counter;
 }
